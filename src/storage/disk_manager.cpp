@@ -43,6 +43,9 @@ void DiskManager::WritePage(page_id_t logical_page_id, const char *page_data) {
 
 page_id_t DiskManager::AllocatePage() {
   ASSERT(false, "Not implemented yet.");
+   
+   
+
   return INVALID_PAGE_ID;
 }
 
@@ -55,6 +58,7 @@ bool DiskManager::IsPageFree(page_id_t logical_page_id) {
 }
 
 page_id_t DiskManager::MapPageId(page_id_t logical_page_id) {
+  
   return 0;
 }
 

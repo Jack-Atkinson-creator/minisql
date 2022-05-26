@@ -49,11 +49,9 @@ public:
 
   void MoveHalfTo(BPlusTreeInternalPage *recipient, BufferPoolManager *buffer_pool_manager);
 
-  void MoveFirstToEndOf(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
-                        BufferPoolManager *buffer_pool_manager);
+  void MoveFirstToEndOf(BPlusTreeInternalPage *recipient, BufferPoolManager *buffer_pool_manager);
 
-  void MoveLastToFrontOf(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
-                         BufferPoolManager *buffer_pool_manager);
+  void MoveLastToFrontOf(BPlusTreeInternalPage *recipient, BufferPoolManager *buffer_pool_manager);
 
 private:
   void CopyNFrom(MappingType *items, int size, BufferPoolManager *buffer_pool_manager);
@@ -62,7 +60,7 @@ private:
 
   void CopyFirstFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager);
 
-  MappingType array_[0];
+  MappingType array_[0];//Key->value
 };
 
 #endif  // MINISQL_B_PLUS_TREE_INTERNAL_PAGE_H

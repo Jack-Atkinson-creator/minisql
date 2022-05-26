@@ -10,6 +10,7 @@
 #include "page/b_plus_tree_page.h"
 #include "transaction/transaction.h"
 #include "index/index_iterator.h"
+#include"page/index_roots_page.h"
 
 #define BPLUSTREE_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
 
@@ -77,19 +78,21 @@ private:
 
   void InsertIntoParent(BPlusTreePage *old_node, const KeyType &key, BPlusTreePage *new_node,
                         Transaction *transaction = nullptr);
+  /*
+  template<typename N>
+  N *Split(N *node);*/
+  InternalPage*Split(InternalPage*node);
+  LeafPage*Split(LeafPage*node);
 
   template<typename N>
-  N *Split(N *node);
-
-  template<typename N>
-  bool CoalesceOrRedistribute(N *node, Transaction *transaction = nullptr);
+  bool CoalesceOrRedistribute(N *node, Transaction *transaction = nullptr);//Merge or redistribute.
 
   template<typename N>
   bool Coalesce(N **neighbor_node, N **node, BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> **parent,
-                int index, Transaction *transaction = nullptr);
+                int index,bool isleft, Transaction *transaction = nullptr);
 
   template<typename N>
-  void Redistribute(N *neighbor_node, N *node, int index);
+  void Redistribute(N *neighbor_node, N *node, int index,bool isleft);
 
   bool AdjustRoot(BPlusTreePage *node);
 

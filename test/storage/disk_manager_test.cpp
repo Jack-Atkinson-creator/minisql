@@ -4,7 +4,7 @@
 #include "storage/disk_manager.h"
 
 TEST(DiskManagerTest, BitMapPageTest) {
-  const size_t size = 512;
+  const size_t size=512;
   char buf[size];
   memset(buf, 0, size);
   BitmapPage<size> *bitmap = reinterpret_cast<BitmapPage<size> *>(buf);
@@ -51,7 +51,7 @@ TEST(DiskManagerTest, DISABLED_FreePageAllocationTest) {
   disk_mgr->DeAllocatePage(DiskManager::BITMAP_SIZE + 1);
   disk_mgr->DeAllocatePage(DiskManager::BITMAP_SIZE + 2);
   DiskFileMetaPage *meta_page = reinterpret_cast<DiskFileMetaPage *>(disk_mgr->GetMetaData());
-  EXPECT_EQ(extent_nums * DiskManager::BITMAP_SIZE - 5, meta_page->GetAllocatedPages());
+  EXPECT_EQ(extent_nums * DiskManager::BITMAP_SIZE - 5, meta_page->GetAllocatedPages());  //total page-5
   EXPECT_EQ(DiskManager::BITMAP_SIZE - 2, meta_page->GetExtentUsedPage(0));
   EXPECT_EQ(DiskManager::BITMAP_SIZE - 3, meta_page->GetExtentUsedPage(1));
   remove(db_name.c_str());

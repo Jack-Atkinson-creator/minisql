@@ -63,7 +63,7 @@ private:
   // member variable, attributes that both internal and leaf page share
   [[maybe_unused]] IndexPageType page_type_;
   [[maybe_unused]] lsn_t lsn_;
-  [[maybe_unused]] int size_;
+  [[maybe_unused]] int size_;//the number of pointers.
   [[maybe_unused]] int max_size_;
   [[maybe_unused]] page_id_t parent_page_id_;
   [[maybe_unused]] page_id_t page_id_;

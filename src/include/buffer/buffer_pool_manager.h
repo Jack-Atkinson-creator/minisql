@@ -43,7 +43,6 @@ private:
    */
   void DeallocatePage(page_id_t page_id);
 
-
 private:
   size_t pool_size_;                                        // number of pages in buffer pool
   Page *pages_;                                             // array of pages
@@ -51,7 +50,7 @@ private:
   std::unordered_map<page_id_t, frame_id_t> page_table_;    // to keep track of pages
   Replacer *replacer_;                                      // to find an unpinned page for replacement
   std::list<frame_id_t> free_list_;                         // to find a free page for replacement
-  recursive_mutex latch_;                                   // to protect shared data structure
+  recursive_mutex latch_;                                   // to protect shared data structure 
 };
 
 #endif  // MINISQL_BUFFER_POOL_MANAGER_H

@@ -2,7 +2,9 @@
 #define MINISQL_EXECUTE_ENGINE_H
 
 #include <string>
+#include <iostream>
 #include <unordered_map>
+#include <map>
 #include "common/dberr.h"
 #include "common/instance.h"
 #include "transaction/transaction.h"
@@ -21,6 +23,8 @@ struct ExecuteContext {
   bool flag_quit_{false};
   Transaction *txn_{nullptr};
 };
+
+using namespace std;
 
 /**
  * ExecuteEngine
@@ -80,8 +84,15 @@ private:
   dberr_t ExecuteQuit(pSyntaxNode ast, ExecuteContext *context);
 
 private:
-  [[maybe_unused]] std::unordered_map<std::string, DBStorageEngine *> dbs_;  /** all opened databases */
-  [[maybe_unused]] std::string current_db_;  /** current database */
+    unordered_map<string, DBStorageEngine*> dbs_;  /** all opened databases */
+    string current_db_;  /** current database */
+    DBStorageEngine* curDB; //当前的指针
+
+
+    string dbPath; //db文件放的地方
+    void DBIntialize();
+    void FileCommand(char* input, const int len, ifstream& in);
+    bool ClauseAnalysis(map<string, Field*>& valMap, map<string, TypeId>& typeMap, pSyntaxNode kNode);
 };
 
 #endif //MINISQL_EXECUTE_ENGINE_H

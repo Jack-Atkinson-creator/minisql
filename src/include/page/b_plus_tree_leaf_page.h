@@ -40,7 +40,7 @@ public:
   // helper methods
   page_id_t GetNextPageId() const;
 
-  void SetNextPageId(page_id_t next_page_id);
+  void SetNextPageId(page_id_t next_page_id);//link lists
 
   KeyType KeyAt(int index) const;
 
@@ -51,25 +51,25 @@ public:
   // insert and delete methods
   int Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator);
 
-  bool Lookup(const KeyType &key, ValueType &value, const KeyComparator &comparator) const;
+  bool Lookup(const KeyType &key, ValueType &value,const KeyComparator &comparator)const;
 
   int RemoveAndDeleteRecord(const KeyType &key, const KeyComparator &comparator);
 
   // Split and Merge utility methods
   void MoveHalfTo(BPlusTreeLeafPage *recipient);
 
-  void MoveAllTo(BPlusTreeLeafPage *recipient);
+  void MoveAllTo(BPlusTreeLeafPage *recipient,const KeyType &middle_key,BufferPoolManager *bufferpoolmanager=nullptr);
 
-  void MoveFirstToEndOf(BPlusTreeLeafPage *recipient);
+  void MoveFirstToEndOf(BPlusTreeLeafPage *recipient,BufferPoolManager *bufferpoolmanager);
 
-  void MoveLastToFrontOf(BPlusTreeLeafPage *recipient);
+  void MoveLastToFrontOf(BPlusTreeLeafPage *recipient,BufferPoolManager *bufferpoolmanager);
 
 private:
   void CopyNFrom(MappingType *items, int size);
 
   void CopyLastFrom(const MappingType &item);
 
-  void CopyFirstFrom(const MappingType &item);
+  void CopyFirstFrom(const MappingType &item,BufferPoolManager *bufferpoolmanager);
 
   page_id_t next_page_id_;
   MappingType array_[0];

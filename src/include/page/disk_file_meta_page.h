@@ -21,7 +21,7 @@ public:
     if (extent_id >= num_extents_) {
       return 0;
     }
-    return extent_used_page_[extent_id];
+    return extent_used_page_[extent_id];//extent->used page
   }
 
 public:

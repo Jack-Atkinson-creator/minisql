@@ -1,5 +1,5 @@
-#include <stdexcept>
 #include <sys/stat.h>
+#include <stdexcept>
 
 #include "glog/logging.h"
 #include "page/bitmap_page.h"
@@ -42,25 +42,66 @@ void DiskManager::WritePage(page_id_t logical_page_id, const char *page_data) {
 }
 
 page_id_t DiskManager::AllocatePage() {
-  ASSERT(false, "Not implemented yet.");
-   
-   
-
-  return INVALID_PAGE_ID;
+  size_t PageNum = BitmapPage<PAGE_SIZE>::GetMaxSupportedSize();
+  DiskFileMetaPage *MetaData = reinterpret_cast<DiskFileMetaPage *>(meta_data_);
+  uint32_t extent_num = MetaData->num_extents_;
+  // see which extent has been read
+  uint32_t extent_id = 0;
+  bool flag = false;
+  for (; extent_id < extent_num; extent_id++) {
+    if (MetaData->extent_used_page_[extent_id] != PageNum) {
+      flag = true;
+      break;
+    }
+  }
+  MetaData->num_allocated_pages_++;
+  uint32_t page_offset;
+  if (flag) {  // find
+    char NowBitMap[PAGE_SIZE];
+    ReadPhysicalPage((PageNum + 1) * extent_id + 1, NowBitMap);
+    // update the bitmap
+    (reinterpret_cast<BitmapPage<PAGE_SIZE> *>(NowBitMap))->AllocatePage(page_offset);
+    MetaData->extent_used_page_[extent_id]++;
+    // rewrite the bitmap
+    WritePhysicalPage((PageNum + 1) * extent_id + 1, NowBitMap);
+  } else {  // need a new page
+    MetaData->num_extents_++;
+    MetaData->extent_used_page_[extent_id] = 1;
+    BitmapPage<PAGE_SIZE> *NewBitMap = new BitmapPage<PAGE_SIZE>;
+    NewBitMap->AllocatePage(page_offset);
+    WritePhysicalPage((PageNum + 1) * extent_id + 1, reinterpret_cast<char *>(NewBitMap));
+  }
+  return page_offset + PageNum * extent_id;
 }
 
 void DiskManager::DeAllocatePage(page_id_t logical_page_id) {
-  ASSERT(false, "Not implemented yet.");
+  size_t PageNum = BitmapPage<PAGE_SIZE>::GetMaxSupportedSize();
+  uint32_t extent_id = logical_page_id / PageNum;
+  uint32_t page_offset = logical_page_id % PageNum;
+  // get the bitmap
+  char NowBitMap[PAGE_SIZE];
+  ReadPhysicalPage((PageNum + 1) * extent_id + 1, NowBitMap);
+  if (!((reinterpret_cast<BitmapPage<PAGE_SIZE> *>(NowBitMap))->DeAllocatePage(page_offset))) {
+    // fail to deallocate the page
+    return;
+  }
+  // rewrite the bitmap
+  WritePhysicalPage((PageNum + 1) * extent_id + 1, NowBitMap);
+  DiskFileMetaPage *MetaData = reinterpret_cast<DiskFileMetaPage *>(meta_data_);
+  MetaData->num_allocated_pages_--;
+  MetaData->extent_used_page_[extent_id]--;
 }
 
 bool DiskManager::IsPageFree(page_id_t logical_page_id) {
-  return false;
+  size_t PageNum = BitmapPage<PAGE_SIZE>::GetMaxSupportedSize();
+  uint32_t extent_id = logical_page_id / PageNum;
+  char NotBitMap[PAGE_SIZE];
+  ReadPhysicalPage((PageNum + 1) * extent_id + 1, NotBitMap);
+  bool flag=reinterpret_cast<BitmapPage<PAGE_SIZE> *>(NotBitMap)->IsPageFree(logical_page_id % PageNum);
+  return flag;
 }
 
-page_id_t DiskManager::MapPageId(page_id_t logical_page_id) {
-  
-  return 0;
-}
+page_id_t DiskManager::MapPageId(page_id_t logical_page_id) { return 0; }
 
 int DiskManager::GetFileSize(const std::string &file_name) {
   struct stat stat_buf;

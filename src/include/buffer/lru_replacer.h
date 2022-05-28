@@ -5,6 +5,8 @@
 #include <mutex>
 #include <unordered_set>
 #include <vector>
+#include <unordered_map>
+#include <map>
 
 #include "buffer/replacer.h"
 #include "common/config.h"
@@ -36,7 +38,9 @@ public:
   size_t Size() override;
 
 private:
-  // add your own private member variables here
+  size_t capacity;
+  list <frame_id_t> lru_list_;//frame_id can be removed
+  std::unordered_map <frame_id_t,list<frame_id_t>::iterator> lru_hash;//hash table
 };
 
 #endif  // MINISQL_LRU_REPLACER_H

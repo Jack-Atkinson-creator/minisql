@@ -95,13 +95,17 @@ void DiskManager::DeAllocatePage(page_id_t logical_page_id) {
 bool DiskManager::IsPageFree(page_id_t logical_page_id) {
   size_t PageNum = BitmapPage<PAGE_SIZE>::GetMaxSupportedSize();
   uint32_t extent_id = logical_page_id / PageNum;
+  uint32_t page_offset = logical_page_id % PageNum;
   char NotBitMap[PAGE_SIZE];
   ReadPhysicalPage((PageNum + 1) * extent_id + 1, NotBitMap);
-  bool flag=reinterpret_cast<BitmapPage<PAGE_SIZE> *>(NotBitMap)->IsPageFree(logical_page_id % PageNum);
+  bool flag = reinterpret_cast<BitmapPage<PAGE_SIZE> *>(NotBitMap)->IsPageFree(page_offset);
   return flag;
 }
 
-page_id_t DiskManager::MapPageId(page_id_t logical_page_id) { return 0; }
+page_id_t DiskManager::MapPageId(page_id_t logical_page_id) {
+  size_t PageNum = BitmapPage<PAGE_SIZE>::GetMaxSupportedSize();
+  return logical_page_id / PageNum + 1 + logical_page_id + 1;
+}
 
 int DiskManager::GetFileSize(const std::string &file_name) {
   struct stat stat_buf;

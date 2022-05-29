@@ -43,7 +43,7 @@ public:
 
   /**
    * Get next free page from disk
-   * return logical page id of allocated page
+   * @return logical page id of allocated page
    */
   page_id_t AllocatePage();
 
@@ -71,6 +71,7 @@ public:
   }
 
   static constexpr size_t BITMAP_SIZE = BitmapPage<PAGE_SIZE>::GetMaxSupportedSize();
+
 private:
   /**
    * Helper function to get disk file size
@@ -100,7 +101,6 @@ private:
   std::recursive_mutex db_io_latch_;
   bool closed{false};
   char meta_data_[PAGE_SIZE];
-  //Disk Metadata Cache
 };
 
 #endif

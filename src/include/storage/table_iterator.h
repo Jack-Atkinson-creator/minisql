@@ -12,17 +12,18 @@ class TableIterator {
 
 public:
   // you may define your own constructor based on your member variables
-  explicit TableIterator();
+  TableIterator();
+  
+  TableIterator(TableHeap *_table_heap, RowId _rid);
 
-  explicit TableIterator(const TableIterator &other);
+  TableIterator(const TableIterator &other);
 
   virtual ~TableIterator();
 
-  inline bool operator==(const TableIterator &itr) const;
+  bool operator==(const TableIterator &itr) const;
 
-  inline bool operator!=(const TableIterator &itr) const;
-
-  const Row &operator*();
+  bool operator!=(const TableIterator &itr) const;
+  Row &operator*();
 
   Row *operator->();
 
@@ -30,8 +31,12 @@ public:
 
   TableIterator operator++(int);
 
+  TableIterator& operator=(const TableIterator &other);
+
 private:
   // add your own private member variables here
+  TableHeap *table_heap;//table堆的指针，访问一个文件堆
+  Row *row;//指向记录
 };
 
 #endif //MINISQL_TABLE_ITERATOR_H

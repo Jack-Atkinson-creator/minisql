@@ -33,5 +33,3 @@ TEST(BPlusTreeTests, IndexIteratorTest) {
     EXPECT_EQ(ans * 100, (*iter).second);
   }
 }
-
-

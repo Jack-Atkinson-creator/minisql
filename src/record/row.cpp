@@ -31,7 +31,7 @@ uint32_t Row::GetSerializedSize(Schema *schema) const {
   uint32_t ans=0;
   int len = fields_.size();
   for(int i=0;i<len;i++){
-    auto tmp = this->fields_[i];//取出row中的每个Field指针
+    auto tmp = this->fields_[i];//取出row的每个Field指针
     ans+=tmp->GetSerializedSize();
   }
   return ans;

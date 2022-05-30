@@ -36,7 +36,12 @@ private:
   IndexMetadata() = delete;
 
   explicit IndexMetadata(const index_id_t index_id, const std::string &index_name,
-                         const table_id_t table_id, const std::vector<uint32_t> &key_map) {}
+                         const table_id_t table_id, const std::vector<uint32_t> &key_map) {
+                           index_id_ = index_id;
+                           index_name_ = index_name;
+                           table_id_ = table_id;
+                           key_map_ = key_map;
+                         }
 
 private:
   static constexpr uint32_t INDEX_METADATA_MAGIC_NUM = 344528;
@@ -59,12 +64,24 @@ public:
   ~IndexInfo() {
     delete heap_;
   }
-
   void Init(IndexMetadata *meta_data, TableInfo *table_info, BufferPoolManager *buffer_pool_manager) {
     // Step1: init index metadata and table info
     // Step2: mapping index key to key schema
     // Step3: call CreateIndex to create the index
-    ASSERT(false, "Not Implemented yet.");
+    meta_data_ = meta_data;
+    table_info_ = table_info;
+    vector<uint32_t> ks(meta_data_->GetKeyMapping());
+    
+    key_schema_ = Schema::ShallowCopySchema(table_info->GetSchema(),ks,heap_);
+    // cout<<"1"<<endl;
+    index_id_t id = meta_data_->GetIndexId();
+    // cout<<"2"<<endl;
+    using INDEX_KEY_TYPE = GenericKey<32>;
+    using INDEX_COMPARATOR_TYPE = GenericComparator<32>;
+    void* mem = heap_->Allocate(sizeof(BPlusTreeIndex<INDEX_KEY_TYPE, RowId, INDEX_COMPARATOR_TYPE>));
+    Index *index = new(mem)BPlusTreeIndex<INDEX_KEY_TYPE, RowId, INDEX_COMPARATOR_TYPE>(id, key_schema_,buffer_pool_manager);
+    // cout<<"3"<<endl;
+    index_ = index;
   }
 
   inline Index *GetIndex() { return index_; }
@@ -81,10 +98,6 @@ private:
   explicit IndexInfo() : meta_data_{nullptr}, index_{nullptr}, table_info_{nullptr},
                          key_schema_{nullptr}, heap_(new SimpleMemHeap()) {}
 
-  Index *CreateIndex(BufferPoolManager *buffer_pool_manager) {
-    ASSERT(false, "Not Implemented yet.");
-    return nullptr;
-  }
 
 private:
   IndexMetadata *meta_data_;

@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 #include "utils/utils.h"
 
+
 static string db_file_name = "catalog_test.db";
 
 TEST(CatalogTest, CatalogMetaTest) {
@@ -24,6 +25,7 @@ TEST(CatalogTest, CatalogMetaTest) {
   meta->SerializeTo(buf);
   // deserialize
   CatalogMeta *other = CatalogMeta::DeserializeFrom(buf, &heap);
+
   ASSERT_NE(nullptr, other);
   ASSERT_EQ(table_nums + 1, other->GetTableMetaPages()->size());
   ASSERT_EQ(index_nums + 1, other->GetIndexMetaPages()->size());
@@ -39,7 +41,7 @@ TEST(CatalogTest, CatalogMetaTest) {
 
 TEST(CatalogTest, CatalogTableTest) {
   SimpleMemHeap heap;
-  /** Stage 2: Testing simple operation */
+  // Stage 1: Testing simple operation 
   auto db_01 = new DBStorageEngine(db_file_name, true);
   auto &catalog_01 = db_01->catalog_mgr_;
   TableInfo *table_info = nullptr;
@@ -59,7 +61,7 @@ TEST(CatalogTest, CatalogTableTest) {
   auto *table_heap = table_info->GetTableHeap();
   ASSERT_TRUE(table_heap != nullptr);
   delete db_01;
-  /** Stage 2: Testing catalog loading */
+  // Stage 2: Testing catalog loading 
   auto db_02 = new DBStorageEngine(db_file_name, false);
   auto &catalog_02 = db_02->catalog_mgr_;
   TableInfo *table_info_03 = nullptr;
@@ -70,7 +72,7 @@ TEST(CatalogTest, CatalogTableTest) {
 
 TEST(CatalogTest, CatalogIndexTest) {
   SimpleMemHeap heap;
-  /** Stage 1: Testing simple operation */
+  // Stage 1: Testing simple operation 
   auto db_01 = new DBStorageEngine(db_file_name, true);
   auto &catalog_01 = db_01->catalog_mgr_;
   TableInfo *table_info = nullptr;
@@ -116,7 +118,7 @@ TEST(CatalogTest, CatalogIndexTest) {
     ASSERT_EQ(rid.Get(), ret[i].Get());
   }
   delete db_01;
-  /** Stage 2: Testing catalog loading */
+  // Stage 2: Testing catalog loading 
   auto db_02 = new DBStorageEngine(db_file_name, false);
   auto &catalog_02 = db_02->catalog_mgr_;
   auto r4 = catalog_02->CreateIndex("table-1", "index-1", index_keys, &txn, index_info);

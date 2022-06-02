@@ -6,7 +6,7 @@ uint32_t Row::SerializeTo(char *buf, Schema *schema) const {
   char *buffer = buf;
   int len = fields_.size();
   for(int i=0;i<len;i++){
-    auto tmp = this->fields_[i];//鍙栧嚭row涓殑姣忎釜Field鎸囬拡
+    auto tmp = this->fields_[i];////取出row中的每个Field指针
     buffer+=tmp->SerializeTo(buffer);
   }
   return buffer-buf;
@@ -31,7 +31,7 @@ uint32_t Row::GetSerializedSize(Schema *schema) const {
   uint32_t ans=0;
   int len = fields_.size();
   for(int i=0;i<len;i++){
-    auto tmp = this->fields_[i];//鍙栧嚭row鐨勬瘡涓狥ield鎸囬拡
+    auto tmp = this->fields_[i];//取出row中的每个Field指针
     ans+=tmp->GetSerializedSize();
   }
   return ans;

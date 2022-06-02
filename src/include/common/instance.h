@@ -21,8 +21,9 @@ public:
     }
     // Initialize components
     disk_mgr_ = new DiskManager(db_file_name_);
-    bpm_ = new BufferPoolManager(buffer_pool_size, disk_mgr_);
+    bpm_ = new BufferPoolManager(buffer_pool_size, disk_mgr_);   
     catalog_mgr_ = new CatalogManager(bpm_, nullptr, nullptr, init);
+
     // Allocate static page for db storage engine
     if (init) {
       page_id_t id;

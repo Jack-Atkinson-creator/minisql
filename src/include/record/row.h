@@ -97,7 +97,7 @@ private:
   Row &operator=(const Row &other) = delete;
 
 private:
-  RowId rid_{};
+  RowId rid_{};//page_id ,slot_num
   std::vector<Field *> fields_;   /** Make sure that all fields are created by mem heap */
   MemHeap *heap_{nullptr};
 };

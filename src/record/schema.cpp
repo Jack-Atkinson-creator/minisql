@@ -14,6 +14,7 @@ uint32_t Schema::GetSerializedSize() const {
   uint32_t size = 0;
   for(int i=0;i<int(columns_.size());i++){
     size+=columns_[i]->GetSerializedSize();
+    //Sum of Each Column's Serialize Size
   }
   return size;
 }
@@ -28,6 +29,7 @@ uint32_t Schema::DeserializeFrom(char *buf, Schema *&schema, MemHeap *heap) {
     columns.push_back(col);
   }
   void *mem = heap->Allocate(sizeof(Schema));
+  //Allocate a new memory for schema.
   schema = new(mem)Schema(columns);
   return pos-buf;
 }

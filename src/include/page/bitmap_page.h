@@ -29,7 +29,6 @@ public:
    * @return whether a page in the extent is free
    */
   bool IsPageFree(uint32_t page_offset) const;
-
 private:
   /**
    * check a bit(byte_index, bit_index) in bytes is free(value 0).
@@ -47,6 +46,7 @@ private:
   /** The space occupied by all members of the class should be equal to the PageSize */
   [[maybe_unused]] uint32_t page_allocated_;
   [[maybe_unused]] uint32_t next_free_page_;
+ public:
   [[maybe_unused]] unsigned char bytes[MAX_CHARS];
 };
 

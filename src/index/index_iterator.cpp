@@ -5,7 +5,7 @@
 INDEX_TEMPLATE_ARGUMENTS INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager*b,page_id_t pid,BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>*lp,int index) 
 :buff_pool_manager(b),CurrPageID(pid),CurrLeafPage(lp),index_in_page(index)
 {
-    
+     
 }
 INDEX_TEMPLATE_ARGUMENTS INDEXITERATOR_TYPE::~IndexIterator() 
 {
@@ -30,7 +30,7 @@ INDEX_TEMPLATE_ARGUMENTS INDEXITERATOR_TYPE &INDEXITERATOR_TYPE::operator++()
     if (index_in_page >= CurrLeafPage->GetSize()) {
       //Need to fetch the next page.
         CurrPageID = CurrLeafPage->GetNextPageId();//Update Current page id.
-        if(CurrPageID!=-1)//Valid.
+        if(CurrPageID!=INVALID_PAGE_ID)//Valid.
         {
             Page*temp=buff_pool_manager->FetchPage(CurrPageID);
             buff_pool_manager->UnpinPage(CurrLeafPage->GetPageId(),false);//Unpin the original page.
@@ -39,7 +39,7 @@ INDEX_TEMPLATE_ARGUMENTS INDEXITERATOR_TYPE &INDEXITERATOR_TYPE::operator++()
         }
       else //INVALID
        {
-            index_in_page=CurrLeafPage->GetSize();//index=the right most page's size.
+            index_in_page=0;//Reach end:index_in_page=0
             buff_pool_manager->UnpinPage(CurrLeafPage->GetPageId(),false);
             CurrLeafPage=nullptr;
        }

@@ -16,6 +16,8 @@ class TableHeap {
 public:
   static TableHeap *Create(BufferPoolManager *buffer_pool_manager, Schema *schema, Transaction *txn,
                            LogManager *log_manager, LockManager *lock_manager, MemHeap *heap) {
+
+
     void *buf = heap->Allocate(sizeof(TableHeap));
     return new(buf) TableHeap(buffer_pool_manager, schema, txn, log_manager, lock_manager);
   }
@@ -106,8 +108,49 @@ private:
           log_manager_(log_manager),
           lock_manager_(lock_manager) {
     //ASSERT(false, "Not implemented yet.");
-    //完成第一页的分配
+
+ /*  /////
+   
+    printf("Before ALLOCATE FIRST PAGE: ");
+    if(buffer_pool_manager->IsPageFree(CATALOG_META_PAGE_ID))
+  {
+    printf("CATALOG META PAGE FREE\n");
+  }
+  else{
+    printf("CATALOG META PAGE NOT FREE\n");
+  }
+   if(buffer_pool_manager->IsPageFree(INDEX_ROOTS_PAGE_ID))
+  {
+    printf("INDEX_ROOTS_PAGE FREE\n");
+  }
+  else{
+    printf("INDEX_ROOTS_PAGE NOT FREE\n");
+  }
+    ////*/
+
+   
+ //完成第一页的分配
     TablePage* first_page = reinterpret_cast<TablePage *>(buffer_pool_manager_->NewPage(first_page_id_));
+    
+/*
+   
+    printf("AFTER ALLOCATE FIRST PAGE:");
+    if(buffer_pool_manager->IsPageFree(CATALOG_META_PAGE_ID))
+  {
+    printf("CATALOG META PAGE FREE\n");
+  }
+  else{
+    printf("CATALOG META PAGE NOT FREE\n");
+  }
+   if(buffer_pool_manager->IsPageFree(INDEX_ROOTS_PAGE_ID))
+  {
+    printf("INDEX_ROOTS_PAGE FREE\n");
+  }
+  else{
+    printf("INDEX_ROOTS_PAGE NOT FREE\n");
+  }
+    ////*/
+
     //初始化第一页
     first_page->Init(first_page_id_,INVALID_PAGE_ID,log_manager, txn);
     //将第一页标记为脏页

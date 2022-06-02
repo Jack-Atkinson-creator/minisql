@@ -29,13 +29,13 @@ Column::Column(const Column *other) : name_(other->name_), type_(other->type_), 
 uint32_t Column::SerializeTo(char *buf) const {
   // replace with your code here
   char* pos=buf;
-  uint32_t name_len = name_.size();//澶勭悊name_
-  memcpy(pos, &name_len, sizeof(uint32_t));
+  uint32_t name_len = name_.size();//处理name_
+  memcpy(pos, &name_len, sizeof(uint32_t));//length
   pos+=sizeof(uint32_t);
   // memcpy(pos, &name_, name_len);
-  name_.copy(pos, name_len, 0);
+  name_.copy(pos, name_len, 0);//string copy
   pos+=name_len;
-  uint8_t stype;//澶勭悊TypeId type_
+  uint8_t stype;//处理TypeId type_
   switch(type_){
     case kTypeInvalid: {stype = 0;break;}
     case kTypeInt: {stype = 1;break;}
@@ -67,7 +67,7 @@ uint32_t Column::DeserializeFrom(char *buf, Column *&column, MemHeap *heap) {
   // replace with your code here
   
   /* deserialize field from buf */
-  char* pos = buf;//鍙栧嚭name_
+  char* pos = buf;//取出name_
   uint32_t name_len = MACH_READ_UINT32(pos);
   pos+=sizeof(uint32_t);
   std::string column_name;
@@ -75,7 +75,7 @@ uint32_t Column::DeserializeFrom(char *buf, Column *&column, MemHeap *heap) {
   pos+=name_len;
   uint8_t stype = MACH_READ_FROM(uint8_t, pos);
   TypeId type;
-  pos+=sizeof(uint8_t);
+  pos+=sizeof(uint8_t);//type_id int8
   switch (stype){
     case 0:{type = kTypeInvalid;break;}
     case 1:{type = kTypeInt;break;}
@@ -94,8 +94,8 @@ uint32_t Column::DeserializeFrom(char *buf, Column *&column, MemHeap *heap) {
   //		ALLOC_P(heap, Column)(column_name, type, col_ind, nullable, unique);
   void *mem = heap->Allocate(sizeof(Column));
   if(type==kTypeChar)
-  column = new(mem)Column(column_name, type, len, col_ind, nullable, unique);
+    column = new(mem)Column(column_name, type, len, col_ind, nullable, unique);
   else
-  column = new(mem)Column(column_name, type, col_ind, nullable, unique);
+    column = new(mem)Column(column_name, type, col_ind, nullable, unique);
   return pos-buf;
 }

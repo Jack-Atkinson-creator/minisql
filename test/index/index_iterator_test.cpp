@@ -10,6 +10,7 @@ TEST(BPlusTreeTests, IndexIteratorTest) {
   DBStorageEngine engine(db_name);
   BasicComparator<int> comparator;
   BPlusTree<int, int, BasicComparator<int>> tree(0, engine.bpm_, comparator, 4, 4);
+  
   // Insert and delete record
   for (int i = 1; i <= 50; i++) {
     tree.Insert(i, i * 100, nullptr);
@@ -27,6 +28,7 @@ TEST(BPlusTreeTests, IndexIteratorTest) {
     ASSERT_EQ(i * 100, v[v.size() - 1]);
   }
   // Iterator
+  
   int ans = 1;
   for (auto iter = tree.Begin(); iter != tree.End(); ++iter, ans += 2) {
     EXPECT_EQ(ans, (*iter).first);

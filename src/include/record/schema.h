@@ -37,6 +37,21 @@ public:
   static Schema *ShallowCopySchema(const Schema *table_schema, const std::vector<uint32_t> &attrs, MemHeap *heap) {
     std::vector<Column *> cols;
     cols.reserve(attrs.size());
+    /*
+    printf("Attrs:\n");
+     for(auto it=attrs.cbegin();it!=attrs.cend();it++)
+     {
+        printf("%d,",*it);
+     }
+     printf("\n");
+    ////
+    /////
+    printf("COLUMN IN TABLE SCHEMA:%lu\n",table_schema->columns_.size());//TEST 3 has 0 attrs!!
+    //TABLE SCHEMA'S NUMBER OF COLUMNS FAILED.
+
+    ////
+    */
+
     for (const auto i : attrs) {
       cols.emplace_back(table_schema->columns_[i]);
     }

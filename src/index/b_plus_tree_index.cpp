@@ -7,7 +7,7 @@ BPLUSTREE_INDEX_TYPE::BPlusTreeIndex(index_id_t index_id, IndexSchema *key_schem
         : Index(index_id, key_schema),
           comparator_(key_schema_),
           container_(index_id, buffer_pool_manager, comparator_) {
-
+  //Bplus tree Newly constructed.
 }
 
 INDEX_TEMPLATE_ARGUMENTS

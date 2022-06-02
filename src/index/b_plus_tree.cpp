@@ -12,9 +12,18 @@ BPLUSTREE_TYPE::BPlusTree(index_id_t index_id, BufferPoolManager *buffer_pool_ma
           buffer_pool_manager_(buffer_pool_manager),
           comparator_(comparator),
           leaf_max_size_(leaf_max_size),
-          internal_max_size_(internal_max_size) {
-            
-            root_page_id_=INVALID_PAGE_ID;//Initialize :Empty.
+          internal_max_size_(internal_max_size) 
+{    
+     //Create a root_page and size=0;
+     //Fetch a new page.
+    page_id_t NewID;
+    Page*root=buffer_pool_manager_->NewPage(NewID);
+    BPlusTreeLeafPage<KeyType,ValueType,KeyComparator>*ROOT=reinterpret_cast<BPlusTreeLeafPage<KeyType,ValueType,KeyComparator>*>(root->GetData());
+    ROOT->Init(NewID,INVALID_PAGE_ID,leaf_max_size_);
+    //Update root_id.
+    root_page_id_=NewID;   
+    buffer_pool_manager_->UnpinPage(NewID,false);
+    UpdateRootPageId(1);//Insert into <index_id,root_page_id>
 }
 
 INDEX_TEMPLATE_ARGUMENTS
@@ -74,7 +83,7 @@ INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transaction *transaction) {
    if(IsEmpty())//Empty Tree
    {
-        StartNewTree(key,value);
+        //StartNewTree(key,value);
         InsertIntoLeaf(key,value,transaction);
         return true;
    }
@@ -431,6 +440,7 @@ bool BPLUSTREE_TYPE::AdjustRoot(BPlusTreePage *old_root_node) {
 
 INDEX_TEMPLATE_ARGUMENTS
 INDEXITERATOR_TYPE BPLUSTREE_TYPE::Begin() {
+ 
   KeyType key;
   Page*begin=FindLeafPage(key,true);//Find the leftest leaf page.
   BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>*beginPage=reinterpret_cast<BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>*>(begin->GetData());
@@ -465,7 +475,6 @@ INDEXITERATOR_TYPE BPLUSTREE_TYPE::Begin(const KeyType &key) {
 
   }
     return INDEXITERATOR_TYPE(buffer_pool_manager_,beginPage->GetPageId(),beginPage,Begin);
-     
 }
 
 /*
@@ -476,26 +485,7 @@ INDEXITERATOR_TYPE BPLUSTREE_TYPE::Begin(const KeyType &key) {
 
 INDEX_TEMPLATE_ARGUMENTS
 INDEXITERATOR_TYPE BPLUSTREE_TYPE::End() {
-   //Fetch the rightest leaf page.
-  Page*currpage=buffer_pool_manager_->FetchPage(root_page_id_);
-  BPlusTreePage*bptp=reinterpret_cast<BPlusTreePage*>(currpage->GetData());
-  BPlusTreePage*Unpin_BPTP=bptp;//B+Tree page that needs to be unpinned.
-  page_id_t NextTurn;
-  while(bptp->IsLeafPage()!=true)//non-leaf
-  {
-     BPlusTreeInternalPage<KeyType,page_id_t,KeyComparator>*IntBPTP=reinterpret_cast<BPlusTreeInternalPage<KeyType,page_id_t,KeyComparator>*>(bptp);
-     NextTurn=IntBPTP->ValueAt(IntBPTP->GetSize()-1);//Rightest pointer.
-     Unpin_BPTP=bptp;
-     //Fetch the page
-     currpage= buffer_pool_manager_->FetchPage(NextTurn);
-      bptp=reinterpret_cast<BPlusTreePage*>(currpage->GetData());
-      //Unpin the last page
-      buffer_pool_manager_->UnpinPage(Unpin_BPTP->GetPageId(),false);
-  }   
-  //bptp is a leaf
-  int end_index=bptp->GetSize();
-  buffer_pool_manager_->UnpinPage(bptp->GetPageId(),false);
-  return INDEXITERATOR_TYPE(buffer_pool_manager_,INVALID_PAGE_ID,nullptr,end_index);
+  return INDEXITERATOR_TYPE(buffer_pool_manager_,INVALID_PAGE_ID,nullptr,0);
 }
 
 
@@ -521,7 +511,8 @@ Page *BPLUSTREE_TYPE::FindLeafPage(const KeyType &key, bool leftMost) {
      if(leftMost)
      {
            NextTurn=IntBPTP->ValueAt(0);
-     }else
+     }
+     else
      {
        NextTurn = IntBPTP->Lookup(key,comparator_);
      } 
@@ -547,16 +538,15 @@ Page *BPLUSTREE_TYPE::FindLeafPage(const KeyType &key, bool leftMost) {
 INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::UpdateRootPageId(int insert_record) 
 {
-  /*
     IndexRootsPage*root_page=reinterpret_cast<IndexRootsPage*>(buffer_pool_manager_->FetchPage(INDEX_ROOTS_PAGE_ID));
     if(insert_record==0)//update in index_roots_page
     {
         root_page->Update(index_id_,root_page_id_);
     }
     else{ //insert into index_roots_page
-         root_page->Insert(index_id_,root_page_id_);
+        root_page->Insert(index_id_,root_page_id_);
     }
-    buffer_pool_manager_->UnpinPage(INDEX_ROOTS_PAGE_ID,true);*/
+    buffer_pool_manager_->UnpinPage(INDEX_ROOTS_PAGE_ID,true);
 }
 
 /**

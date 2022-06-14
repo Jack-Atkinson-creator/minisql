@@ -397,7 +397,7 @@ bool BPLUSTREE_TYPE::Coalesce(N **neighbor_node, N **node,
  */
 INDEX_TEMPLATE_ARGUMENTS
 template<typename N>
-void BPLUSTREE_TYPE::Redistribute(N *neighbor_node, N *node, int index,bool isleft) //27,10,28,right
+void BPLUSTREE_TYPE::Redistribute(N *neighbor_node, N *node, int index,bool isleft) 
 {
 
   if(!isleft) //neighbor is a right sibling

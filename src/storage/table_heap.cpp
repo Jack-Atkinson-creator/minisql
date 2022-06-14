@@ -1,18 +1,18 @@
 #include "storage/table_heap.h"
 
 bool TableHeap::InsertTuple(Row &row, Transaction *txn) {
-  uint32_t record_len = row.GetSerializedSize(schema_); //µÃµ½rowĞòÁĞ»¯µÄ³¤¶È
+  uint32_t record_len = row.GetSerializedSize(schema_); //å¾—åˆ°rowåºåˆ—åŒ–çš„é•¿åº¦
   if(record_len>TablePage::SIZE_MAX_ROW){
-    //¼«¶ËÇé¿öÏÂ£¬Ö»·ÅÒ»Ìõ¼ÇÂ¼£¨ÎÄ¼şÍ·+¸Ã¼ÇÂ¼Æ«ÒÆÁ¿+¼ÇÂ¼³¤¶È+¼ÇÂ¼£©£¬Ò²·Å²»ÏÂ
+    //æç«¯æƒ…å†µä¸‹ï¼Œåªæ”¾ä¸€æ¡è®°å½•ï¼ˆæ–‡ä»¶å¤´+è¯¥è®°å½•åç§»é‡+è®°å½•é•¿åº¦+è®°å½•ï¼‰ï¼Œä¹Ÿæ”¾ä¸ä¸‹
     return false;
   }
-    //°ÑµÚÒ»¸öpage¶Á³öÀ´
+    //æŠŠç¬¬ä¸€ä¸ªpageè¯»å‡ºæ¥
   TablePage *NowPage = reinterpret_cast<TablePage *>(buffer_pool_manager_->FetchPage(first_page_id_));
   buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),false);
-  while(1){//Ñ­»·ÕÒµ½×î½üµÄÄÜ·ÅµÄpage
+  while(1){//å¾ªç¯æ‰¾åˆ°æœ€è¿‘çš„èƒ½æ”¾çš„page
     if(NowPage->InsertTuple(row,schema_,txn,lock_manager_,log_manager_)){
-      buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),true);//ÉèÖÃÎªÔàÒ³
-      return true;//³É¹¦²åÈë
+      buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),true);//è®¾ç½®ä¸ºè„é¡µ
+      return true;//æˆåŠŸæ’å…¥
     }
     page_id_t NextPageId = NowPage->GetNextPageId();
     if (NextPageId == INVALID_PAGE_ID){
@@ -22,16 +22,16 @@ bool TableHeap::InsertTuple(Row &row, Transaction *txn) {
     buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),false);
   }
   int new_page_id = INVALID_PAGE_ID;
-  buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),true);//ÉèÖÃÎªÔàÒ³
+  buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),true);//è®¾ç½®ä¸ºè„é¡µ
   TablePage *New_Page = reinterpret_cast<TablePage *>(buffer_pool_manager_->NewPage(new_page_id));
-  buffer_pool_manager_->UnpinPage(New_Page->GetPageId(),false);//½âËø
+  buffer_pool_manager_->UnpinPage(New_Page->GetPageId(),false);//è§£é”
   if (New_Page==nullptr) return false;
-  //Íê³ÉË«ÏòÁ¬½Ó
+  //å®ŒæˆåŒå‘è¿æ¥
   New_Page->Init(new_page_id,NowPage->GetPageId(),log_manager_,txn);
   New_Page->InsertTuple(row,schema_,txn,lock_manager_,log_manager_);
-  buffer_pool_manager_->UnpinPage(New_Page->GetPageId(),true);//ÉèÖÃÎªÔàÒ³
+  buffer_pool_manager_->UnpinPage(New_Page->GetPageId(),true);//è®¾ç½®ä¸ºè„é¡µ
   NowPage->SetNextPageId(new_page_id);
-  buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),true);//ÉèÖÃÎªÔàÒ³    
+  buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),true);//è®¾ç½®ä¸ºè„é¡µ    
   return true;
 }
 
@@ -51,23 +51,23 @@ bool TableHeap::MarkDelete(const RowId &rid, Transaction *txn) {
 }
 
 bool TableHeap::UpdateTuple(Row &row, const RowId &rid, Transaction *txn) {
-  //ÏÈÕÒµ½¾ÉµÄ¼ÇÂ¼ËùÔÚÒ³
+  //å…ˆæ‰¾åˆ°æ—§çš„è®°å½•æ‰€åœ¨é¡µ
   auto page = reinterpret_cast<TablePage *>(buffer_pool_manager_->FetchPage(rid.GetPageId()));
-  if(page==nullptr){//ÕÒ²»µ½Õâ¸ö¼ÇÂ¼
+  if(page==nullptr){//æ‰¾ä¸åˆ°è¿™ä¸ªè®°å½•
     return false;
   }
   buffer_pool_manager_->UnpinPage(page->GetTablePageId(), false);
-  //ÕÒµÄµ½
-  Row old_row(rid);  //°ÑÔ­À´µÄrow´æÏÂÀ´,·½±ãrollback
-  bool Isupdate;//±£´æ×Óº¯Êı½á¹û
+  //æ‰¾çš„åˆ°
+  Row old_row(rid);  //æŠŠåŸæ¥çš„rowå­˜ä¸‹æ¥,æ–¹ä¾¿rollback
+  bool Isupdate;//ä¿å­˜å­å‡½æ•°ç»“æœ
   Isupdate=page->UpdateTuple(row, &old_row, schema_, txn, lock_manager_, log_manager_);
-  if(Isupdate){//³É¹¦¸üĞÂ
+  if(Isupdate){//æˆåŠŸæ›´æ–°
     //RowId new_row_id (rid.GetPageId(),row.GetRowId().GetSlotNum());
     row.SetRowId(rid);
     buffer_pool_manager_->UnpinPage(page->GetTablePageId(), true);
     ASSERT(row.GetRowId().GetPageId()!=INVALID_PAGE_ID, "cuocuocuo in page!");
     return true;
-  }else{//¸üĞÂÊ§°Ü
+  }else{//æ›´æ–°å¤±è´¥
     uint32_t serialized_size = row.GetSerializedSize(schema_);
     ASSERT(serialized_size > 0, "Can not have empty row.");
     uint32_t slot_num = old_row.GetRowId().GetSlotNum();
@@ -75,15 +75,15 @@ bool TableHeap::UpdateTuple(Row &row, const RowId &rid, Transaction *txn) {
     if(slot_num>=page->GetTupleCount() || TablePage::IsDeleted(tuple_size)){
       buffer_pool_manager_->UnpinPage(page->GetTablePageId(), false);
       return false;
-    }else{//ÒòÎª¿Õ¼ä²»×ãµ¼ÖÂ²åÈëÊ§°Ü
+    }else{//å› ä¸ºç©ºé—´ä¸è¶³å¯¼è‡´æ’å…¥å¤±è´¥
       //page_id_t next_page_id=page->GetNextPageId();
       //auto next_page=reinterpret_cast<TablePage *>(buffer_pool_manager_->FetchPage(next_page_id));
       bool isInsert;
-      isInsert=InsertTuple(row,txn);//ÅĞ¶ÏÓĞÃ»ÓĞ³É¹¦²åÈë
+      isInsert=InsertTuple(row,txn);//åˆ¤æ–­æœ‰æ²¡æœ‰æˆåŠŸæ’å…¥
       ASSERT(row.GetRowId().GetPageId()!=INVALID_PAGE_ID, "cuocuocuo OutPage!!!");
-      //µ±Ç°ÎŞ·¨²åÈë¿ÉÒÔÖ±½Óµ÷ÓÃ²åÈëº¯Êı²åµ½±ğµÄµØ·½£¬µ«Í¬Ê±rid»á±»ĞŞ¸Ä£¬ËùÒÔ¸ü¸ÄÁË²ÎÊıÀàĞÍ
+      //å½“å‰æ— æ³•æ’å…¥å¯ä»¥ç›´æ¥è°ƒç”¨æ’å…¥å‡½æ•°æ’åˆ°åˆ«çš„åœ°æ–¹ï¼Œä½†åŒæ—¶ridä¼šè¢«ä¿®æ”¹ï¼Œæ‰€ä»¥æ›´æ”¹äº†å‚æ•°ç±»å‹
       if(isInsert)
-        MarkDelete(rid,txn);//½«¾É¼ÇÂ¼´¦±ê¼ÇÎªÉ¾³ı
+        MarkDelete(rid,txn);//å°†æ—§è®°å½•å¤„æ ‡è®°ä¸ºåˆ é™¤
       buffer_pool_manager_->UnpinPage(page->GetTablePageId(), isInsert);
       return isInsert;
     }
@@ -113,12 +113,12 @@ void TableHeap::RollbackDelete(const RowId &rid, Transaction *txn) {
 }
 
 void TableHeap::FreeHeap() {
-  //°ÑµÚÒ»¸öpage¶Á³öÀ´
+  //æŠŠç¬¬ä¸€ä¸ªpageè¯»å‡ºæ¥
   TablePage *NowPage = reinterpret_cast<TablePage *>(buffer_pool_manager_->FetchPage(first_page_id_));
-  while(1){//Ñ­»·ÕÒµ½×î½üµÄÄÜ·ÅµÄpage
-    buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),true);//ÉèÖÃÎªÔàÒ³
-    page_id_t NextPageId = NowPage->GetNextPageId();//ÕÒµ½ÏÂÒ»Ò³
-    buffer_pool_manager_->DeletePage(NowPage->GetPageId());//É¾µ½ÕâÒ»Ò³
+  while(1){//å¾ªç¯æ‰¾åˆ°æœ€è¿‘çš„èƒ½æ”¾çš„page
+    buffer_pool_manager_->UnpinPage(NowPage->GetPageId(),true);//è®¾ç½®ä¸ºè„é¡µ
+    page_id_t NextPageId = NowPage->GetNextPageId();//æ‰¾åˆ°ä¸‹ä¸€é¡µ
+    buffer_pool_manager_->DeletePage(NowPage->GetPageId());//åˆ åˆ°è¿™ä¸€é¡µ
     if (NextPageId == INVALID_PAGE_ID){
       return;
     }
@@ -142,7 +142,7 @@ bool TableHeap::GetTuple(Row *row, Transaction *txn) {
 }
 
 TableIterator TableHeap::Begin(Transaction *txn) {
-  //ÕÒµ½µÚÒ»Ìõ¼ÇÂ¼£¬´´½¨Ò»¸öµü´úÆ÷£¬°Ñrow¸øËü
+  //æ‰¾åˆ°ç¬¬ä¸€æ¡è®°å½•ï¼Œåˆ›å»ºä¸€ä¸ªè¿­ä»£å™¨ï¼ŒæŠŠrowç»™å®ƒ
   //return TableIterator();
   RowId FirstId;
   auto page_id=first_page_id_;
